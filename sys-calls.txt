@@ -1,0 +1,101 @@
+// Check if can read from port.
+// Return 0 if unable to read or no data is available
+SYS_CAN_READ(portNum, numBytes);
+
+mov eax, SYS_CAN_READ
+mov ebx, IN_PORT
+mov ecx, 1
+int 0x80
+
+
+// Read from port (or file descriptor)
+SYS_READ(port, bufferPtr, bufferNumBytes);
+
+in ax, IN_PORT
+movzx edx, ax
+mov eax, SYS_READ
+mov ebx, 0
+mov ecx, update_buffer
+int 0x80
+
+
+// Write to port
+SYS_WRITE(portNum, bufferPtr, bufferNumBytes);
+
+mov eax, SYS_WRITE
+mov ebx, OUT_PORT
+mov ecx, report_buffer
+mov edx, 6
+int 0x80
+
+
+// Get random number. Result in eax.
+SYS_RAND();
+
+mov eax, SYS_RAND
+int 0x80
+
+
+// Walk in a specified direction. The entity will
+// remain walking in the specified direction until
+// given a new direction. A direction of 0,0 must be
+// given to stop walking
+// y: -1 up, 0 nop, 1 down
+// x: -1 left, 0 nop, 1 right
+SYS_WALK(xDirection, yDirection);
+
+mov eax, SYS_WALK
+mov ebx, [directions + eax * 8]
+mov ecx, [directions + eax * 8 + 4]
+int 0x80
+
+
+// Perform attack
+SYS_ATTACK();
+
+mov eax, SYS_ATTACK
+int 0x80
+
+
+// Scan the area within the given distance. I'm guessing this is
+// the radius of a circular area? The results of the scan are placed
+// in the scan results ptr and lenght parameters. Return result in eax.
+// I believe the return value is less than 0 for errors, otherwise
+// I'm guessing the return value is the number of game entities
+// found in the area?
+
+enum scan_type {
+    SCAN_ENTITY,
+    SCAN_PLAYER,
+    SCAN_SPELL,
+    SCAN_PROJECTILE,
+    SCAN_BOSS
+};
+
+struct scan_results {
+    i32 yDirection or yDistance;
+    i32 xDirection or xDistance; 
+    scan_type type;
+};
+
+SYS_SCAN_AREA(scanDistance, scanResultsPtr, scanResultsNumBytes);
+
+mov eax, SYS_SCAN_AREA
+mov ebx, SCAN_DISTANCE
+mov ecx, scan_results
+mov edx, end_scan - scan_results
+int 0x80
+
+
+SYS_ROM_UPDATE(updateBufferPtr, updateBufferNumBytes)
+
+mov eax, SYS_ROM_UPDATE
+mov ebx, ecx
+mov ecx, edx
+int 0x80
+
+
+SYS_DISCONNECT();
+
+mov eax, SYS_DISCONNECT
+int 0x80
